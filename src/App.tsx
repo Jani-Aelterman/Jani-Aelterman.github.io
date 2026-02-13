@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AppBar, Toolbar, Typography, Container, Grid, Card, CardContent, Button, CssBaseline } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
@@ -7,7 +7,7 @@ function App() {
     <>
       {/* Zorgt voor een consistente reset van browser stijlen (Dark mode ready!) */}
       <CssBaseline />
-      
+
       {/* De Navigatiebalk */}
       <AppBar position="static">
         <Toolbar>
@@ -23,10 +23,10 @@ function App() {
         <Typography variant="h4" component="h1" gutterBottom>
           Welkom op mijn projecten pagina
         </Typography>
-        
+
         <Grid container spacing={3}>
           {/* Voorbeeld Kaartje 1 */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h5">Project Naam</Typography>
