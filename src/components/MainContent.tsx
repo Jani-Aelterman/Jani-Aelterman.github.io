@@ -9,6 +9,8 @@ import { styled } from '@mui/material/styles';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import IconButton from '@mui/material/IconButton';
 
+import { content } from '../data';
+
 interface GitHubRepo {
     id: number;
     name: string;
@@ -17,35 +19,6 @@ interface GitHubRepo {
     language: string;
     pushed_at: string;
 }
-
-const prints = [
-    {
-        title: 'Headphone Stand',
-        img: 'https://placehold.co/600x400?text=Headphone+Stand', // Placeholder
-        url: '#',
-        description: 'A minimal headphone stand designed for stability.'
-    },
-    {
-        title: 'Cable Organizer',
-        img: 'https://placehold.co/600x400?text=Cable+Organizer', // Placeholder
-        url: '#',
-        description: 'Clip-on cable organizer for desk management.'
-    },
-];
-
-const skills = [
-    'React', 'TypeScript', 'Node.js', 'Python', '3D Printing', 'CAD Design', 'Git', 'MUI'
-];
-
-interface PrintableModel {
-    id: string;
-    title: string;
-}
-
-const printablesItems: PrintableModel[] = [
-    { id: '1428287', title: 'Bicycle Handlebar Extension', },
-    { id: '123456', title: 'Placeholder Model', },
-];
 
 const StyledCard = styled(Card)(({ theme }) => ({
     display: 'flex',
@@ -80,7 +53,7 @@ export default function MainContent() {
     const [projects, setProjects] = React.useState<GitHubRepo[]>([]);
 
     React.useEffect(() => {
-        fetch('https://api.github.com/users/Jani-Aelterman/repos?sort=pushed&direction=desc')
+        fetch(`https://api.github.com/users/${content.site.copyrightName.replace(' ', '-')}/repos?sort=pushed&direction=desc`)
             .then(response => response.json())
             .then(data => {
                 // Filter out forked repos if desired, or just take the first 6
@@ -104,14 +77,13 @@ export default function MainContent() {
             {/* Hero Section */}
             <Box id="about" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2, my: 4 }}>
                 <Typography variant="h1" gutterBottom sx={{ fontSize: { xs: '2.5rem', md: '4rem' } }}>
-                    Hi, I'm <span style={{ color: 'var(--mui-palette-primary-main)' }}>Jani Aelterman</span>
+                    {content.hero.title} <span style={{ color: 'var(--mui-palette-primary-main)' }}>{content.hero.name}</span>
                 </Typography>
                 <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '800px' }}>
-                    I'm a passionate developer and maker. I love building web applications and creating 3D printed solutions.
-                    Explore my work below!
+                    {content.hero.tagline}
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 2 }}>
-                    {skills.map((skill) => (
+                    {content.hero.skills.map((skill) => (
                         <Chip key={skill} label={skill} variant="outlined" />
                     ))}
                 </Box>
@@ -171,7 +143,7 @@ export default function MainContent() {
                     My latest designs from Printables.
                 </Typography>
                 <Grid container spacing={2}>
-                    {printablesItems.map((item, index) => (
+                    {content.printables.map((item, index) => (
                         <Grid key={index} size={{ xs: 12, md: 6 }}>
                             <StyledCard
                                 variant="outlined"

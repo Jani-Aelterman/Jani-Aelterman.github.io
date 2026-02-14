@@ -6,13 +6,13 @@ import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
-
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@mui/material/Drawer';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import Typography from '@mui/material/Typography';
 import ColorModeIconDropdown from '../theme/ColorModeIconDropdown';
+import Logo from './Logo';
+import { content } from '../data';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -51,61 +51,58 @@ export default function AppAppBar() {
       <Container maxWidth="lg">
         <StyledToolbar variant="dense" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 2, color: 'primary.main' }}>
-              AJ
-            </Typography>
+            <Box sx={{ mr: 2 }}>
+              <Logo />
+            </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small" href="#projects">
-                Projects
-              </Button>
-              <Button variant="text" color="info" size="small" href="#printing">
-                3D Printing
-              </Button>
-              <Button variant="text" color="info" size="small" href="#about">
-                About
-              </Button>
+              {content.navigation.map((nav) => (
+                <Button key={nav.href} variant="text" color="info" size="small" href={nav.href}>
+                  {nav.label}
+                </Button>
+              ))}
             </Box>
           </Box>
           <Box
             sx={{
-              display: { xs: 'none', md: 'flex' },
-              gap: 1,
+              display: 'flex',
               alignItems: 'center',
+              gap: 1,
             }}
           >
             <ColorModeIconDropdown />
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
-            <ColorModeIconDropdown size="medium" />
-            <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
-              <MenuIcon />
-            </IconButton>
-            <Drawer
-              anchor="top"
-              open={open}
-              onClose={toggleDrawer(false)}
-              PaperProps={{
-                sx: {
-                  top: 'var(--template-frame-height, 0px)',
-                },
-              }}
-            >
-              <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                  }}
-                >
-                  <IconButton onClick={toggleDrawer(false)}>
-                    <CloseRoundedIcon />
-                  </IconButton>
+            <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
+              <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
+                <MenuIcon />
+              </IconButton>
+              <Drawer
+                anchor="top"
+                open={open}
+                onClose={toggleDrawer(false)}
+                PaperProps={{
+                  sx: {
+                    top: 'var(--template-frame-height, 0px)',
+                  },
+                }}
+              >
+                <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    <IconButton onClick={toggleDrawer(false)}>
+                      <CloseRoundedIcon />
+                    </IconButton>
+                  </Box>
+                  {content.navigation.map((nav) => (
+                    <MenuItem key={nav.href} onClick={toggleDrawer(false)} component="a" href={nav.href}>
+                      {nav.label}
+                    </MenuItem>
+                  ))}
                 </Box>
-                <MenuItem onClick={toggleDrawer(false)} component="a" href="#projects">Projects</MenuItem>
-                <MenuItem onClick={toggleDrawer(false)} component="a" href="#printing">3D Printing</MenuItem>
-                <MenuItem onClick={toggleDrawer(false)} component="a" href="#about">About</MenuItem>
-              </Box>
-            </Drawer>
+              </Drawer>
+            </Box>
           </Box>
         </StyledToolbar>
       </Container>
