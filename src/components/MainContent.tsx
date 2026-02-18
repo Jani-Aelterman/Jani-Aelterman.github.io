@@ -8,8 +8,16 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import IconButton from '@mui/material/IconButton';
-
 import { content } from '../data';
+import CodeIcon from '@mui/icons-material/Code';
+import BuildIcon from '@mui/icons-material/Build';
+import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
+
+const iconMap: Record<string, React.ReactNode> = {
+    'Code': <CodeIcon />,
+    'Build': <BuildIcon />,
+    'DirectionsBike': <DirectionsBikeIcon />,
+};
 
 interface GitHubRepo {
     id: number;
@@ -87,6 +95,24 @@ export default function MainContent() {
                         <Chip key={skill} label={skill} variant="outlined" />
                     ))}
                 </Box>
+                {/* Detailed About Section */}
+                <Box sx={{ maxWidth: '800px', mt: 6, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {(content.about as any)?.sections.map((section: any, index: number) => (
+                        <Box key={index} sx={{ display: 'flex', gap: 2 }}>
+                            <Box sx={{ color: 'primary.main', minWidth: 40, pt: 0.5 }}>
+                                {iconMap[section.icon]}
+                            </Box>
+                            <Box>
+                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                    {section.title}
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary">
+                                    {section.text}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
             </Box>
 
             {/* Projects Section */}
@@ -107,6 +133,50 @@ export default function MainContent() {
                                 tabIndex={0}
                                 className={focusedCardIndex === index ? 'Mui-focused' : ''}
                             >
+                                <Box
+                                    sx={{
+                                        position: 'relative',
+                                        width: '100%',
+                                        height: 140,
+                                        overflow: 'hidden',
+                                        borderBottom: '1px solid',
+                                        borderColor: 'divider',
+                                    }}
+                                >
+                                    {/* Blurred Background */}
+                                    <Box
+                                        component="div"
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundImage: `url(${(content.projectImages as Record<string, string>)[project.name] || '/default-project.svg'})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            filter: 'blur(8px) brightness(0.6)',
+                                            transform: 'scale(1.1)', // Prevent blur edges
+                                        }}
+                                    />
+                                    {/* Foreground Image */}
+                                    <Box
+                                        component="img"
+                                        src={(content.projectImages as Record<string, string>)[project.name] || '/default-project.svg'}
+                                        alt={project.name}
+                                        sx={{
+                                            position: 'relative',
+                                            height: '100%',
+                                            width: 'auto',
+                                            minWidth: '140px', // Ensure at least square aspect ratio
+                                            maxWidth: '100%',
+                                            objectFit: 'cover', // Crop if aspect ratio forced
+                                            zIndex: 1,
+                                            display: 'block',
+                                            margin: '0 auto',
+                                        }}
+                                    />
+                                </Box>
                                 <StyledCardContent>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <Typography gutterBottom variant="h6" component="div">

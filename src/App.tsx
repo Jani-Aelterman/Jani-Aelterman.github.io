@@ -1,10 +1,10 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
-import AppTheme from './theme/AppTheme';
-import AppAppBar from './components/AppAppBar';
-import MainContent from './components/MainContent';
+import AppTheme from './theme/AppTheme.tsx';
+import AppAppBar from './components/AppAppBar.tsx';
+import MainContent from './components/MainContent.tsx';
 //import Latest from './components/Latest';
-import Footer from './components/Footer';
+import Footer from './components/Footer.tsx';
 
 export default function Blog(props: { disableCustomTheme?: boolean }) {
   return (
