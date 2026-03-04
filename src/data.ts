@@ -36,7 +36,8 @@ export const content = {
     // Optional: Map specific repositories to custom images.
     projectImages: {
         'Number-Match-App': '/images/NumberMatch_Screenshot.png',
-        'WLED-Expressive-App': '/images/Screenshot_DevicePage.png'
+        'WLED-Expressive-App': '/images/Screenshot_DevicePage.png',
+        'Jani-Aelterman.github.io': '/images/Jani-Aelterman.github.io.png'
     },
     printables: [
         { id: '1605165', title: 'Kona Satori Rear Brake Guide Fix' }, // Je nieuwe model bovenaan
