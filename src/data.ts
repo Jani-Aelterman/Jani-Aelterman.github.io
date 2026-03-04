@@ -63,6 +63,18 @@ export const content = {
             }
         ]
     },
+    github: {
+        featuredRepos: [
+            'Razer-Chroma-WLED-Connect',
+            'Number-Match-App',
+            'WLED-Expressive-App',
+            'Jani-Aelterman.github.io'
+        ]
+    },
+    latestRelease: {
+        show: true,
+        fallbackRepo: 'Number-Match-App'
+    },
     features: {
         enableNewsletter: false
     }

@@ -26,6 +26,15 @@ interface GitHubRepo {
     html_url: string;
     language: string;
     pushed_at: string;
+    fork: boolean;
+}
+
+interface GitHubRelease {
+    name: string;
+    tag_name: string;
+    html_url: string;
+    published_at: string;
+    repo_name: string;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -59,16 +68,62 @@ const StyledCardContent = styled(CardContent)({
 export default function MainContent() {
     const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(null);
     const [projects, setProjects] = React.useState<GitHubRepo[]>([]);
+    const [latestReleaseData, setLatestReleaseData] = React.useState<GitHubRelease | null>(null);
 
     React.useEffect(() => {
-        fetch(`https://api.github.com/users/${content.site.copyrightName.replace(' ', '-')}/repos?sort=pushed&direction=desc`)
-            .then(response => response.json())
-            .then(data => {
-                // Filter out forked repos if desired, or just take the first 6
-                const recentProjects = Array.isArray(data) ? data.slice(0, 6) : [];
-                setProjects(recentProjects);
-            })
-            .catch(error => console.error('Error fetching GitHub repos:', error));
+        // Fetch featured repositories defined in data.ts
+        const contentConfig = content as any;
+        if (contentConfig.github?.featuredRepos && contentConfig.github.featuredRepos.length > 0) {
+            const repoPromises = contentConfig.github.featuredRepos.map((repoName: string) =>
+                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repoName}`)
+                    .then(res => res.ok ? res.json() : null)
+            );
+
+            Promise.all(repoPromises)
+                .then(async (dataArray) => {
+                    const validRepos = dataArray.filter(repo => repo !== null) as GitHubRepo[];
+                    // Sort locally by pushed_at descending
+                    validRepos.sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime());
+                    setProjects(validRepos);
+
+                    // If configured, fetch latest release for all these featured projects concurrently
+                    if (contentConfig.latestRelease?.show && validRepos.length > 0) {
+                        const releasePromises = validRepos.map((repo: GitHubRepo) =>
+                            fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repo.name}/releases/latest`)
+                                .then(res => {
+                                    if (!res.ok) throw new Error(`No release for ${repo.name}`);
+                                    return res.json();
+                                })
+                                .then(releaseData => ({ ...releaseData, repo_name: repo.name } as GitHubRelease))
+                        );
+
+                        try {
+                            const results = await Promise.allSettled(releasePromises);
+                            const successfulReleases = results
+                                .filter((result): result is PromiseFulfilledResult<GitHubRelease> => result.status === 'fulfilled')
+                                .map(result => result.value);
+
+                            if (successfulReleases.length > 0) {
+                                // Sort by published_at descending to find the absolute latest
+                                successfulReleases.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+                                setLatestReleaseData(successfulReleases[0]);
+                            } else if (contentConfig.latestRelease?.fallbackRepo) {
+                                // Fallback if none of the featured projects have a release
+                                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases/latest`)
+                                    .then(res => {
+                                        if (!res.ok) throw new Error('Fallback release not found');
+                                        return res.json();
+                                    })
+                                    .then(data => setLatestReleaseData({ ...data, repo_name: contentConfig.latestRelease.fallbackRepo }))
+                                    .catch(err => console.error('Error fetching fallback release:', err));
+                            }
+                        } catch (error) {
+                            console.error('Error processing releases:', error);
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching GitHub repos:', error));
+        }
     }, []);
 
     const handleFocus = (index: number) => {
@@ -114,6 +169,43 @@ export default function MainContent() {
                     ))}
                 </Box>
             </Box>
+
+            {/* Latest Release Banner */}
+            {content.latestRelease?.show && latestReleaseData && (
+                <Box id="latest-release" sx={{ mb: -4 }}>
+                    <Card variant="outlined" sx={{
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                        border: 'none',
+                        backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)'
+                    }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2 }}>
+                            <Box>
+                                <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>
+                                    LATEST RELEASE: {latestReleaseData.repo_name}
+                                </Typography>
+                                <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                                    {latestReleaseData.name || latestReleaseData.tag_name}
+                                </Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                                    Published on {new Date(latestReleaseData.published_at).toLocaleDateString()}
+                                </Typography>
+                            </Box>
+                            <IconButton
+                                href={latestReleaseData.html_url}
+                                target="_blank"
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.2)',
+                                    color: 'inherit',
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                                }}
+                            >
+                                <GitHubIcon />
+                            </IconButton>
+                        </CardContent>
+                    </Card>
+                </Box>
+            )}
 
             {/* Projects Section */}
             <Box id="projects">
