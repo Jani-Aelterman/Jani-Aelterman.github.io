@@ -89,12 +89,15 @@ export default function MainContent() {
                     // If configured, fetch latest release for all these featured projects concurrently
                     if (contentConfig.latestRelease?.show && validRepos.length > 0) {
                         const releasePromises = validRepos.map((repo: GitHubRepo) =>
-                            fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repo.name}/releases/latest`)
+                            fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repo.name}/releases?per_page=1`)
                                 .then(res => {
                                     if (!res.ok) throw new Error(`No release for ${repo.name}`);
                                     return res.json();
                                 })
-                                .then(releaseData => ({ ...releaseData, repo_name: repo.name } as GitHubRelease))
+                                .then(releases => {
+                                    if (!Array.isArray(releases) || releases.length === 0) throw new Error(`No release for ${repo.name}`);
+                                    return { ...releases[0], repo_name: repo.name } as GitHubRelease;
+                                })
                         );
 
                         try {
@@ -109,12 +112,16 @@ export default function MainContent() {
                                 setLatestReleaseData(successfulReleases[0]);
                             } else if (contentConfig.latestRelease?.fallbackRepo) {
                                 // Fallback if none of the featured projects have a release
-                                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases/latest`)
+                                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases?per_page=1`)
                                     .then(res => {
                                         if (!res.ok) throw new Error('Fallback release not found');
                                         return res.json();
                                     })
-                                    .then(data => setLatestReleaseData({ ...data, repo_name: contentConfig.latestRelease.fallbackRepo }))
+                                    .then(releases => {
+                                        if (Array.isArray(releases) && releases.length > 0) {
+                                            setLatestReleaseData({ ...releases[0], repo_name: contentConfig.latestRelease.fallbackRepo });
+                                        }
+                                    })
                                     .catch(err => console.error('Error fetching fallback release:', err));
                             }
                         } catch (error) {
