@@ -37,7 +37,8 @@ export const content = {
     projectImages: {
         'Number-Match-App': '/images/NumberMatch_Screenshot.png',
         'WLED-Expressive-App': '/images/Screenshot_DevicePage.png',
-        'Jani-Aelterman.github.io': '/images/Jani-Aelterman.github.io.png'
+        'Jani-Aelterman.github.io': '/images/Jani-Aelterman.github.io.png',
+        'project-valley': '/images/Project-Valley_Screenshot.png'//'/images/Project-Valley-Logo-Hero.png'
     },
     printables: [
         { id: '1605165', title: 'Kona Satori Rear Brake Guide Fix' }, // Je nieuwe model bovenaan
@@ -68,8 +69,10 @@ export const content = {
             'Razer-Chroma-WLED-Connect',
             'Number-Match-App',
             'WLED-Expressive-App',
-            'Jani-Aelterman.github.io'
-        ]
+            'Jani-Aelterman.github.io',
+            'project-valley'
+        ],
+        excludeRepos: ['WSA', 'MagiskOnWSA']
     },
     latestRelease: {
         show: true,

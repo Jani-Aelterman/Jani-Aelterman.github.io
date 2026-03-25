@@ -71,65 +71,53 @@ export default function MainContent() {
     const [latestReleaseData, setLatestReleaseData] = React.useState<GitHubRelease | null>(null);
 
     React.useEffect(() => {
-        // Fetch featured repositories defined in data.ts
         const contentConfig = content as any;
-        if (contentConfig.github?.featuredRepos && contentConfig.github.featuredRepos.length > 0) {
-            const repoPromises = contentConfig.github.featuredRepos.map((repoName: string) =>
-                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repoName}`)
-                    .then(res => res.ok ? res.json() : null)
+
+        // 1. Fetch Dynamic Repositories for the Grid (excluding specific ones)
+        fetch(`https://api.github.com/users/${contentConfig.site.copyrightName.replace(' ', '-')}/repos?sort=pushed&direction=desc`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const excluded = contentConfig.github?.excludeRepos || [];
+                    const validRepos = data.filter((repo: GitHubRepo) => !repo.fork && !excluded.includes(repo.name));
+                    setProjects(validRepos.slice(0, 6));
+                }
+            })
+            .catch(error => console.error('Error fetching latest GitHub repos:', error));
+
+        // 2. Fetch Latest Release for the Featured Repos
+        if (contentConfig.latestRelease?.show && contentConfig.github?.featuredRepos) {
+            const releasePromises = contentConfig.github.featuredRepos.map((repoName: string) =>
+                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repoName}/releases?per_page=1`)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`No release for ${repoName}`);
+                        return res.json();
+                    })
+                    .then(releases => {
+                        if (!Array.isArray(releases) || releases.length === 0) throw new Error(`No release for ${repoName}`);
+                        return { ...releases[0], repo_name: repoName } as GitHubRelease;
+                    })
             );
 
-            Promise.all(repoPromises)
-                .then(async (dataArray) => {
-                    const validRepos = dataArray.filter(repo => repo !== null) as GitHubRepo[];
-                    // Sort locally by pushed_at descending
-                    validRepos.sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime());
-                    setProjects(validRepos);
+            Promise.allSettled(releasePromises).then(results => {
+                const successfulReleases = results
+                    .filter((result): result is PromiseFulfilledResult<GitHubRelease> => result.status === 'fulfilled')
+                    .map(result => result.value);
 
-                    // If configured, fetch latest release for all these featured projects concurrently
-                    if (contentConfig.latestRelease?.show && validRepos.length > 0) {
-                        const releasePromises = validRepos.map((repo: GitHubRepo) =>
-                            fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repo.name}/releases?per_page=1`)
-                                .then(res => {
-                                    if (!res.ok) throw new Error(`No release for ${repo.name}`);
-                                    return res.json();
-                                })
-                                .then(releases => {
-                                    if (!Array.isArray(releases) || releases.length === 0) throw new Error(`No release for ${repo.name}`);
-                                    return { ...releases[0], repo_name: repo.name } as GitHubRelease;
-                                })
-                        );
-
-                        try {
-                            const results = await Promise.allSettled(releasePromises);
-                            const successfulReleases = results
-                                .filter((result): result is PromiseFulfilledResult<GitHubRelease> => result.status === 'fulfilled')
-                                .map(result => result.value);
-
-                            if (successfulReleases.length > 0) {
-                                // Sort by published_at descending to find the absolute latest
-                                successfulReleases.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
-                                setLatestReleaseData(successfulReleases[0]);
-                            } else if (contentConfig.latestRelease?.fallbackRepo) {
-                                // Fallback if none of the featured projects have a release
-                                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases?per_page=1`)
-                                    .then(res => {
-                                        if (!res.ok) throw new Error('Fallback release not found');
-                                        return res.json();
-                                    })
-                                    .then(releases => {
-                                        if (Array.isArray(releases) && releases.length > 0) {
-                                            setLatestReleaseData({ ...releases[0], repo_name: contentConfig.latestRelease.fallbackRepo });
-                                        }
-                                    })
-                                    .catch(err => console.error('Error fetching fallback release:', err));
+                if (successfulReleases.length > 0) {
+                    successfulReleases.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+                    setLatestReleaseData(successfulReleases[0]);
+                } else if (contentConfig.latestRelease?.fallbackRepo) {
+                    fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases?per_page=1`)
+                        .then(res => res.ok ? res.json() : null)
+                        .then(releases => {
+                            if (releases && Array.isArray(releases) && releases.length > 0) {
+                                setLatestReleaseData({ ...releases[0], repo_name: contentConfig.latestRelease.fallbackRepo });
                             }
-                        } catch (error) {
-                            console.error('Error processing releases:', error);
-                        }
-                    }
-                })
-                .catch(error => console.error('Error fetching GitHub repos:', error));
+                        })
+                        .catch(err => console.error('Error fetching fallback release:', err));
+                }
+            });
         }
     }, []);
 
