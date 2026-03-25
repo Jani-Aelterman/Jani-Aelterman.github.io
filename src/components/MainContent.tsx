@@ -79,7 +79,8 @@ export default function MainContent() {
             .then(data => {
                 if (Array.isArray(data)) {
                     const excluded = contentConfig.github?.excludeRepos || [];
-                    const validRepos = data.filter((repo: GitHubRepo) => !repo.fork && !excluded.includes(repo.name));
+                    const featured = contentConfig.github?.featuredRepos || [];
+                    const validRepos = data.filter((repo: GitHubRepo) => (!repo.fork || featured.includes(repo.name)) && !excluded.includes(repo.name));
                     setProjects(validRepos.slice(0, 6));
                 }
             })

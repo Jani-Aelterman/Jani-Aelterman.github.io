@@ -66,7 +66,7 @@ export const content = {
     },
     github: {
         featuredRepos: [
-            'Razer-Chroma-WLED-Connect',
+            'Razer-Chroma-WLED-Connect-App-WinUI3',
             'Number-Match-App',
             'WLED-Expressive-App',
             'Jani-Aelterman.github.io',
