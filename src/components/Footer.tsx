@@ -9,15 +9,16 @@ import Typography from '@mui/material/Typography';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import PrintablesIcon from './PrintablesIcon';
-import { content } from '../data';
+import { useLanguage } from '../LanguageContext';
 import Logo from './Logo';
 
 function Copyright() {
+    const { config } = useLanguage();
     return (
         <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
             {'Copyright © '}
             <Link color="text.secondary" href="https://github.com/Jani-Aelterman">
-                {content.site.copyrightName}
+                {config.site.copyrightName}
             </Link>
             &nbsp;
             {new Date().getFullYear()}
@@ -26,7 +27,9 @@ function Copyright() {
 }
 
 export default function Footer() {
+    const { t, config } = useLanguage();
     return (
+
         <React.Fragment>
             <Divider />
             <Container
@@ -60,7 +63,7 @@ export default function Footer() {
                                 <Logo />
                             </Box>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                {content.site.description}
+                                {t.site.description}
                             </Typography>
                         </Box>
                     </Box>
@@ -88,7 +91,7 @@ export default function Footer() {
                         <IconButton
                             color="inherit"
                             size="small"
-                            href={content.social.github}
+                            href={config.social.github}
                             aria-label="GitHub"
                             sx={{ alignSelf: 'center' }}
                         >
@@ -97,7 +100,7 @@ export default function Footer() {
                         <IconButton
                             color="inherit"
                             size="small"
-                            href={content.social.printables}
+                            href={config.social.printables}
                             aria-label="Printables"
                             sx={{ alignSelf: 'center' }}
                         >
@@ -106,13 +109,14 @@ export default function Footer() {
                         <IconButton
                             color="inherit"
                             size="small"
-                            href={content.social.linkedin}
+                            href={config.social.linkedin}
                             aria-label="LinkedIn"
                             sx={{ alignSelf: 'center' }}
                         >
                             <LinkedInIcon />
                         </IconButton>
                     </Stack>
+
                 </Box>
             </Container>
         </React.Fragment>

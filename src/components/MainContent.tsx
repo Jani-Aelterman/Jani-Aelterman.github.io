@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import IconButton from '@mui/material/IconButton';
-import { content } from '../data';
+import { useLanguage } from '../LanguageContext';
 import CodeIcon from '@mui/icons-material/Code';
 import BuildIcon from '@mui/icons-material/Build';
 import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
@@ -66,20 +66,19 @@ const StyledCardContent = styled(CardContent)({
 });
 
 export default function MainContent() {
+    const { t, config } = useLanguage();
     const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(null);
     const [projects, setProjects] = React.useState<GitHubRepo[]>([]);
     const [latestReleaseData, setLatestReleaseData] = React.useState<GitHubRelease | null>(null);
 
     React.useEffect(() => {
-        const contentConfig = content as any;
-
         // 1. Fetch Dynamic Repositories for the Grid (excluding specific ones)
-        fetch(`https://api.github.com/users/${contentConfig.site.copyrightName.replace(' ', '-')}/repos?sort=pushed&direction=desc`)
+        fetch(`https://api.github.com/users/${config.site.copyrightName.replace(' ', '-')}/repos?sort=pushed&direction=desc`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
-                    const excluded = contentConfig.github?.excludeRepos || [];
-                    const featured = contentConfig.github?.featuredRepos || [];
+                    const excluded = config.github?.excludeRepos || [];
+                    const featured = config.github?.featuredRepos || [];
                     const validRepos = data.filter((repo: GitHubRepo) => (!repo.fork || featured.includes(repo.name)) && !excluded.includes(repo.name));
                     setProjects(validRepos.slice(0, 6));
                 }
@@ -87,9 +86,9 @@ export default function MainContent() {
             .catch(error => console.error('Error fetching latest GitHub repos:', error));
 
         // 2. Fetch Latest Release for the Featured Repos
-        if (contentConfig.latestRelease?.show && contentConfig.github?.featuredRepos) {
-            const releasePromises = contentConfig.github.featuredRepos.map((repoName: string) =>
-                fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${repoName}/releases?per_page=1`)
+        if (config.latestRelease?.show && config.github?.featuredRepos) {
+            const releasePromises = config.github.featuredRepos.map((repoName: string) =>
+                fetch(`https://api.github.com/repos/${config.site.copyrightName.replace(' ', '-')}/${repoName}/releases?per_page=1`)
                     .then(res => {
                         if (!res.ok) throw new Error(`No release for ${repoName}`);
                         return res.json();
@@ -108,19 +107,19 @@ export default function MainContent() {
                 if (successfulReleases.length > 0) {
                     successfulReleases.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
                     setLatestReleaseData(successfulReleases[0]);
-                } else if (contentConfig.latestRelease?.fallbackRepo) {
-                    fetch(`https://api.github.com/repos/${contentConfig.site.copyrightName.replace(' ', '-')}/${contentConfig.latestRelease.fallbackRepo}/releases?per_page=1`)
+                } else if (config.latestRelease?.fallbackRepo) {
+                    fetch(`https://api.github.com/repos/${config.site.copyrightName.replace(' ', '-')}/${config.latestRelease.fallbackRepo}/releases?per_page=1`)
                         .then(res => res.ok ? res.json() : null)
                         .then(releases => {
                             if (releases && Array.isArray(releases) && releases.length > 0) {
-                                setLatestReleaseData({ ...releases[0], repo_name: contentConfig.latestRelease.fallbackRepo });
+                                setLatestReleaseData({ ...releases[0], repo_name: config.latestRelease.fallbackRepo });
                             }
                         })
                         .catch(err => console.error('Error fetching fallback release:', err));
                 }
             });
         }
-    }, []);
+    }, [config.site.copyrightName, config.github, config.latestRelease]);
 
     const handleFocus = (index: number) => {
         setFocusedCardIndex(index);
@@ -136,19 +135,19 @@ export default function MainContent() {
             {/* Hero Section */}
             <Box id="about" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2, my: 4 }}>
                 <Typography variant="h1" gutterBottom sx={{ fontSize: { xs: '2.5rem', md: '4rem' } }}>
-                    {content.hero.title} <span style={{ color: 'var(--mui-palette-primary-main)' }}>{content.hero.name}</span>
+                    {t.hero.title} <span style={{ color: 'var(--mui-palette-primary-main)' }}>{config.site.title}</span>
                 </Typography>
                 <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '800px' }}>
-                    {content.hero.tagline}
+                    {t.hero.tagline}
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 2 }}>
-                    {content.hero.skills.map((skill) => (
+                    {t.hero.skills.map((skill) => (
                         <Chip key={skill} label={skill} variant="outlined" />
                     ))}
                 </Box>
                 {/* Detailed About Section */}
                 <Box sx={{ maxWidth: '800px', mt: 6, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {(content.about as any)?.sections.map((section: any, index: number) => (
+                    {t.about.sections.map((section: any, index: number) => (
                         <Box key={index} sx={{ display: 'flex', gap: 2 }}>
                             <Box sx={{ color: 'primary.main', minWidth: 40, pt: 0.5 }}>
                                 {iconMap[section.icon]}
@@ -167,7 +166,7 @@ export default function MainContent() {
             </Box>
 
             {/* Latest Release Banner */}
-            {content.latestRelease?.show && latestReleaseData && (
+            {config.latestRelease?.show && latestReleaseData && (
                 <Box id="latest-release" sx={{ mb: -4 }}>
                     <Card variant="outlined" sx={{
                         bgcolor: 'primary.main',
@@ -178,13 +177,13 @@ export default function MainContent() {
                         <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2 }}>
                             <Box>
                                 <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>
-                                    LATEST RELEASE: {latestReleaseData.repo_name}
+                                    {t.labels.latestRelease}: {latestReleaseData.repo_name}
                                 </Typography>
                                 <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
                                     {latestReleaseData.name || latestReleaseData.tag_name}
                                 </Typography>
                                 <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                                    Published on {new Date(latestReleaseData.published_at).toLocaleDateString()}
+                                    {t.labels.publishedOn} {new Date(latestReleaseData.published_at).toLocaleDateString()}
                                 </Typography>
                             </Box>
                             <IconButton
@@ -206,10 +205,10 @@ export default function MainContent() {
             {/* Projects Section */}
             <Box id="projects">
                 <Typography variant="h4" gutterBottom>
-                    Featured Projects
+                    {t.labels.featuredProjects}
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 4 }}>
-                    Some of my recent code repositories on GitHub.
+                    {t.labels.featuredProjectsDesc}
                 </Typography>
                 <Grid container spacing={2}>
                     {projects.map((project, index) => (
@@ -240,7 +239,7 @@ export default function MainContent() {
                                             left: 0,
                                             right: 0,
                                             bottom: 0,
-                                            backgroundImage: `url(${(content.projectImages as Record<string, string>)[project.name] || '/default-project.svg'})`,
+                                            backgroundImage: `url(${(config.projectImages as Record<string, string>)[project.name] || '/default-project.svg'})`,
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center',
                                             filter: 'blur(8px) brightness(0.6)',
@@ -250,7 +249,7 @@ export default function MainContent() {
                                     {/* Foreground Image */}
                                     <Box
                                         component="img"
-                                        src={(content.projectImages as Record<string, string>)[project.name] || '/default-project.svg'}
+                                        src={(config.projectImages as Record<string, string>)[project.name] || '/default-project.svg'}
                                         alt={project.name}
                                         sx={{
                                             position: 'relative',
@@ -280,7 +279,7 @@ export default function MainContent() {
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden'
                                     }}>
-                                        {project.description || 'No description available.'}
+                                        {project.description || t.labels.noDescription}
                                     </Typography>
                                     <Box sx={{ mt: 'auto', pt: 2 }}>
                                         {project.language && <Chip label={project.language} size="small" color="primary" variant="outlined" />}
@@ -295,13 +294,13 @@ export default function MainContent() {
             {/* 3D Printing Section */}
             <Box id="printing">
                 <Typography variant="h4" gutterBottom>
-                    3D Printing & Design
+                    {t.labels.printingHeading}
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 4 }}>
-                    My latest designs from Printables.
+                    {t.labels.printingDesc}
                 </Typography>
                 <Grid container spacing={2}>
-                    {content.printables.map((item, index) => (
+                    {t.printables.map((item, index) => (
                         <Grid key={index} size={{ xs: 12, md: 6 }}>
                             <StyledCard
                                 variant="outlined"

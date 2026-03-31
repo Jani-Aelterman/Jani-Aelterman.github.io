@@ -12,7 +12,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../theme/ColorModeIconDropdown';
 import Logo from './Logo';
-import { content } from '../data';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '../LanguageContext';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -32,6 +33,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 
 export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
+  const { t } = useLanguage();
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -55,7 +57,7 @@ export default function AppAppBar() {
               <Logo />
             </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              {content.navigation.map((nav) => (
+              {t.navigation.map((nav) => (
                 <Button key={nav.href} variant="text" color="info" size="small" href={nav.href}>
                   {nav.label}
                 </Button>
@@ -69,7 +71,9 @@ export default function AppAppBar() {
               gap: 1,
             }}
           >
+            <LanguageSwitcher />
             <ColorModeIconDropdown />
+
             <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
               <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
                 <MenuIcon />
@@ -95,7 +99,7 @@ export default function AppAppBar() {
                       <CloseRoundedIcon />
                     </IconButton>
                   </Box>
-                  {content.navigation.map((nav) => (
+                  {t.navigation.map((nav) => (
                     <MenuItem key={nav.href} onClick={toggleDrawer(false)} component="a" href={nav.href}>
                       {nav.label}
                     </MenuItem>

@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import { content } from '../data';
+import { useLanguage } from '../LanguageContext';
 
 const LogoContainer = styled(Box)(({ theme }) => ({
     display: 'inline-flex',
@@ -24,10 +24,11 @@ const LogoContainer = styled(Box)(({ theme }) => ({
 }));
 
 export default function Logo() {
+    const { config } = useLanguage();
     return (
         <LogoContainer>
             <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-                {content.site.logo}
+                {config.site.logo}
             </Typography>
         </LogoContainer>
     );
