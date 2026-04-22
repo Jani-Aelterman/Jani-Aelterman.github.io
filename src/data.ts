@@ -71,6 +71,7 @@ export const translations = {
             ]
         },
         printables: [
+            { id: '1697502', title: 'Compact Saddle Rail Mount for Rockbros Tail Light (Twist-Lock)' },
             { id: '1635631', title: 'Gridfinity Module for Xiaomi Mijia Electric Precision Screwdriver' },
             { id: '1605165', title: 'Kona Satori Rear Brake Guide Fix' },
             { id: '1428287', title: 'Bicycle Handlebar Extension' },
@@ -121,6 +122,7 @@ export const translations = {
             ]
         },
         printables: [
+            { id: '1697502', title: 'Compacte zadelrailhouder voor Rockbros achterlicht (Twist-Lock)' },
             //{ id: '1635631', title: 'Gridfinity Module for Xiaomi Mijia Electric Precision Screwdriver' },
             { id: '1635631', title: 'Gridfinity Module voor Xiaomi Mijia Elektrische Precisie Schroevendraaier'},
             //{ id: '1605165', title: 'Kona Satori Rear Brake Guide Fix' },
